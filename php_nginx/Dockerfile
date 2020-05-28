@@ -1,8 +1,10 @@
 FROM php:7.2-fpm
 ENV COMPOSER_VERSION=1.6.5 \
-    NGINX_VERSION=1.14.0-1~stretch \
-    NJS_VERSION=1.14.0.0.2.0-1~stretch \
-    NODE_VERSION=8.11.3
+    NGINX_VERSION=1.16.1-1~buster \
+    NJS_VERSION=1.16.1.0.3.7-1~buster
+    
+
+ADD https://raw.githubusercontent.com/mlocati/docker-php-extension-installer/master/install-php-extensions /usr/local/bin/
 
 # this is a sample BASE image, that php_fpm projects can start FROM
 # it's got a lot in it, but it's designed to meet dev and prod needs in single image
@@ -33,10 +35,40 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
     libjpeg62-turbo-dev \
     libmcrypt-dev \
     libpq-dev \
+    libxml2-dev \
     supervisor \
     unzip \
+    wget \
+    vim \
     zip \
+    strace \
     && rm -r /var/lib/apt/lists/*
+
+# install extension using the tools from community 
+RUN chmod uga+x /usr/local/bin/install-php-extensions && sync && \
+    install-php-extensions \ 
+    xdebug \
+    imagick \
+    tokenizer \
+    bcmath \
+    ctype \
+    sqlite3 \
+    pdo_sqlite \
+    pgsql \
+    pdo_pgsql \
+    openssl \
+    mbstring \
+    fileinfo 
+
+# enable extension & manual configuration 
+RUN echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20170718/xdebug.so" >> /usr/local/etc/php/php.ini    
+RUN echo "error_reporting = E_ALL" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "display_startup_errors = On" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.idekey=\"PHPSTORM\"" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "extension=imagick.so" >> /usr/local/etc/php/php.ini
 
 # Install extensions using the helper script provided by the base image
 RUN docker-php-ext-install \
@@ -55,6 +87,24 @@ RUN docker-php-ext-configure gd \
 # configure intl
 RUN docker-php-ext-configure intl
 
+# check mod install
+RUN php -m
+
+###########
+# PHPUnit #
+###########
+RUN wget https://phar.phpunit.de/phpunit-7.4.phar
+RUN chmod +x phpunit-7.4.phar
+RUN mv phpunit-7.4.phar /usr/local/bin/phpunit
+RUN phpunit --version
+
+###################
+# PHP Codesniffer #
+###################
+RUN curl -OL https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
+RUN mv phpcs.phar /usr/local/bin/phpcs
+RUN chmod +x /usr/local/bin/phpcs
+
 # install nginx (copied from official nginx Dockerfile)
 RUN NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
 	found=''; \
@@ -68,8 +118,8 @@ RUN NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
 		apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
 	done; \
 	test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-	echo "deb http://nginx.org/packages/debian/ stretch nginx" >> /etc/apt/sources.list.d/nginx.list \
-	# echo "deb-src http://nginx.org/packages/debian/ stretch nginx" >> /etc/apt/nginx.list \
+	echo "deb http://nginx.org/packages/debian/ buster nginx" >> /etc/apt/sources.list.d/nginx.list \
+	# echo "deb-src http://nginx.org/packages/debian/ buster nginx" >> /etc/apt/nginx.list \
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
 						nginx=${NGINX_VERSION} \
@@ -104,37 +154,6 @@ RUN curl --silent --fail --location --retry 3 --output /tmp/installer.php --url 
  && composer --ansi --version --no-interaction \
  && rm -f /tmp/installer.php
 
-# install node for running gulp at container entrypoint startup in dev
-# copied from official node Dockerfile
-# gpg keys listed at https://github.com/nodejs/node#release-team
-RUN set -ex \
-  && for key in \
-    94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
-    FD3A5288F042B6850C66B31F09FE44734EB7990E \
-    71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
-    DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
-    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
-    B9AE9905FFD7803F25714661B63B535A4C206CA9 \
-    56730D5401028683275BD23C23EFEFE93C4CFFFE \
-    77984A986EBC2AA786BC0F66B01FBB92821C587A \
-    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
-  ; do \
-    gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
-    gpg --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
-    gpg --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
-  done
-
-ENV NPM_CONFIG_LOGLEVEL info
-
-RUN curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
-  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
-  && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
-  && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
-  && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
-  && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
-  && ln -s /usr/local/bin/node /usr/local/bin/nodejs
-
-ENV PATH /var/www/node_modules/.bin:$PATH
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

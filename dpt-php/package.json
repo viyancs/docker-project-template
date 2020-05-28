@@ -1,0 +1,19 @@
+{
+  "name": "dpt-php",
+  "version": "1.0.0",
+  "description": "Docker Project Template PHP npm config",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viyancs/docker_file.git"
+  },
+  "author": "viyancs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/viyancs/docker_file/issues"
+  },
+  "homepage": "https://github.com/viyancs/docker_file#dpt-php"
+}
