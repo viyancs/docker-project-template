@@ -68,6 +68,8 @@ RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebu
 RUN echo "xdebug.idekey=\"PHPSTORM\"" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 RUN echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+# memory limit
+RUN echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini
 RUN echo "extension=imagick.so" >> /usr/local/etc/php/php.ini
 
 # Install extensions using the helper script provided by the base image
