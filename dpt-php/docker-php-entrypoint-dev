@@ -20,7 +20,7 @@ chmod -R g+w /var/www/html/ \
   
 # run last minute build tools just for local dev
 cd /var/www/html
-composer dump-autoload
+#composer dump-autoload
 #cd /var/www/html/public
 
 

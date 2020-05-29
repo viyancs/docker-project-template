@@ -1,8 +1,0 @@
-{
-    "name": "viyancs/docker_file/dpt-php",
-    "description": "Docker Project Template PHP",
-    "require": {
-        "monolog/monolog": "1.0.*",
-        "pyrocms/pyrocms": "3.5"
-    }
-}

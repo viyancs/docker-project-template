@@ -2,7 +2,6 @@ version: '3.3'
 
 services:
     php:
-        # note you need to manually build this image from base dockerfile https://github.com/viyancs/docker_file/blob/master/php_nginx/Dockerfile or use default
         image: dpt-php:latest
         build: .
         volumes:

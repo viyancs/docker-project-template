@@ -1,4 +1,4 @@
-FROM viyancs/php-nginx-nodejs-supervisord:1.0
+FROM viyancs/php-nginx-supervisord:1.0
 
 # add bitbucket and github to known hosts for ssh needs
 WORKDIR /root/.ssh
@@ -6,39 +6,9 @@ RUN chmod 0600 /root/.ssh \
     && ssh-keyscan -t rsa bitbucket.org >> known_hosts \
     && ssh-keyscan -t rsa github.com >> known_hosts
 
-##
-## Compose Package Manager
-##
-
 # install composer dependencies
 WORKDIR /var/www/html
-COPY ./app/composer.json ./app/composer.lock* ./
-ENV COMPOSER_VENDOR_DIR=/var/www/vendor
-# RUN composer config github-oauth.github.com YOUROAUTHKEYHERE
-RUN composer install --no-scripts --no-autoloader --ansi --no-interaction
-
-##
-## Node Build Tools
-##
-
-# we hardcode to develop so all tools are there for npm build
-ENV NODE_ENV=develop
-# install dependencies first, in a different location for easier app bind mounting for local development
-#WORKDIR /var/www
-#COPY ./package.json .
-#RUN npm install
-# no need to cache clean in non-final build steps
-#ENV PATH /var/www/node_modules/.bin:$PATH
-#ENV NODE_PATH=/var/www/node_modules
-#WORKDIR /var/www/app
-
-##
-## We Are Go for Bower
-##
-
-# If you were to use Bower, this might be how to do it
-# COPY ./bower.json .
-# RUN bower install --allow-root
+COPY ./app/* ./
 
 # add custom php-fpm pool settings, these get written at entrypoint startup
 ENV FPM_PM_MAX_CHILDREN=20 \
@@ -75,16 +45,10 @@ RUN dos2unix /usr/local/bin/docker-php-entrypoint-dev
 COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./nginx-site.conf /etc/nginx/conf.d/default.conf
 
-
-# copy in app code as late as possible, as it changes the most
-WORKDIR /var/www/html
-#COPY --chown=www-data:www-data . .
-#RUN composer dump-autoload -o
-
 # be sure nginx is properly passing to php-fpm and fpm is responding
 HEALTHCHECK --interval=5s --timeout=3s \
   CMD curl -f http://localhost/ping || exit 1099
 
-WORKDIR /var/www/html
+#WORKDIR /var/www/html
 EXPOSE 80 443 9000 9001
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
