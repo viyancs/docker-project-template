@@ -41,3 +41,4 @@ If this was your app, to start local development you would:
  
  ### First Bundle
  - there are laravel october cms inside app directory, its possible to change to another framework.
+ - access http://localhost:8080 
