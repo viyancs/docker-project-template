@@ -25,7 +25,7 @@
   <h3 align="center">Docker-Project-Template</h3>
 
   <p align="center">
-     a Lot of Docker Environment that build for Devops engineer, System Engineer & Developer to make code,testing,deploy Like a Cooking Water.
+     a Lot of Docker Environment that build for Devops engineer, System Engineer & Developer to coding,testing,deploying Like a Cooking Water.
     <br />
     <a href="https://github.com/viyancs/docker_file"><strong>Explore the docs »</strong></a>
     <br />
