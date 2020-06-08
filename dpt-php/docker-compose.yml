@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
     php:
-        image: dpt-php:latest
+        image: viyancs/dpt-php:latest
         build: .
         volumes:
             # used delegated mode here on docker for mac for faster disk I/O
