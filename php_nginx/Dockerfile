@@ -58,7 +58,9 @@ RUN chmod uga+x /usr/local/bin/install-php-extensions && sync && \
     pdo_pgsql \
     openssl \
     mbstring \
-    fileinfo 
+    fileinfo \
+    redis \
+    zip
 
 # enable extension & manual configuration 
 RUN echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20170718/xdebug.so" >> /usr/local/etc/php/php.ini    
@@ -70,7 +72,6 @@ RUN echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-x
 RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 # memory limit
 RUN echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini
-RUN echo "extension=imagick.so" >> /usr/local/etc/php/php.ini
 
 # Install extensions using the helper script provided by the base image
 RUN docker-php-ext-install \
