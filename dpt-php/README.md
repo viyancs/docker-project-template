@@ -1,6 +1,6 @@
 ## PHP DOCKER PROJECT TEMPLATE
 
-> This tries to be a "good defaults" example of using PHP, Nginx, PHP-FPM, Laravel (october cms) possible another framework, and Composer in Docker for local development and shipping to production with all the bells, whistles, and best practices.
+> This tries to be a "good defaults" example of using PHP, Nginx, PHP-FPM, Laravel,native  possible another framework, and Composer in Docker for local development and shipping to production with all the bells, whistles, and best practices.
 
 ### Contribuitions
 - 
